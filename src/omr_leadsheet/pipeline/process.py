@@ -27,6 +27,7 @@ from typing import IO
 
 from omr_leadsheet.config import Config
 from omr_leadsheet.pipeline import lyrics
+from omr_leadsheet.utils.imagemagick import has_imagemagick, magick_argv
 
 __all__ = ["process"]
 
@@ -81,14 +82,14 @@ def _run_omr(
             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False,
             timeout=300,
         )
-        if shutil.which("magick") is None:
+        if not has_imagemagick():
             return
         hi_pdf = tmp_path / "hi.pdf"
         pages = sorted(tmp_path.glob("page-*.png"))
         if not pages:
             return
         subprocess.run(
-            ["magick", *[str(p) for p in pages], str(hi_pdf)],
+            magick_argv(*[str(p) for p in pages], str(hi_pdf)),
             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False,
             timeout=300,
         )
@@ -243,6 +244,7 @@ def process(
         # with GT. See chord_ops/key_filter.py for the safety contract.
         try:
             from music21 import converter as _conv
+
             from omr_leadsheet.chord_ops.key_filter import apply_key_aware_flatten
             _gt = Path(__file__).resolve().parents[3] / "data" / "songbook_groundtruth.json"
             _score = _conv.parse(str(lead_chords))
@@ -295,8 +297,8 @@ def process(
         # bugs on #13 LCWTO that surfaces as wrong measures for D, B7,
         # Em, etc.). Only measures listed in the truth file are touched.
         from omr_leadsheet.pipeline.truth_overlay import (
-            load_truth,
             apply_truth_overlay,
+            load_truth,
         )
         truth = load_truth(song)
         if truth is not None:

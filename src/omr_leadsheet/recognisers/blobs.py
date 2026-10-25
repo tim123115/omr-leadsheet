@@ -35,6 +35,7 @@ import subprocess
 import tempfile
 from dataclasses import dataclass
 
+from omr_leadsheet.utils.imagemagick import magick_argv
 
 MIN_GAP = 10          # px of whitespace columns separating two blobs
 MIN_BLOB_W = 12       # narrower blobs are noise (a tie endpoint, an articulation)
@@ -149,8 +150,8 @@ def scan_chord_row_blobs(
             h = b.y_bottom - b.y_top + 1 + 2 * PADDING_Y
             crop_path = os.path.join(td, f"blob_{i}_{b.x_left}_{b.y_top}.png")
             subprocess.run(
-                ["magick", bin_png, "-crop",
-                 f"{w}x{h}+{x0}+{y0}", "+repage", crop_path],
+                magick_argv(bin_png, "-crop",
+                 f"{w}x{h}+{x0}+{y0}", "+repage", crop_path),
                 capture_output=True, check=False,
                 timeout=60,
             )

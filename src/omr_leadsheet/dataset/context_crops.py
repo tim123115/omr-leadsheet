@@ -10,6 +10,7 @@ centered on that point into <labeling-dir>/context/.
 Usage: dataset_context_crops.py <labeling-dir> <omr-dir>
 """
 from __future__ import annotations
+
 import csv
 import os
 import re
@@ -18,6 +19,7 @@ import sys
 import tempfile
 import zipfile
 
+from omr_leadsheet.utils.imagemagick import magick_argv
 
 # filename format: <safe_src>_sheet<N>(_art)?_<x>_<y>.png
 FN_RE = re.compile(r"^(.+)_sheet(\d+)(?:_art)?_(\d+)_(\d+)\.png$")
@@ -71,8 +73,8 @@ def main() -> None:
                 y0 = max(0, r["_y"] - CONTEXT_H // 2)
                 try:
                     subprocess.run(
-                        ["magick", bin_png, "-crop",
-                         f"{CONTEXT_W}x{CONTEXT_H}+{x0}+{y0}", "+repage", out_path],
+                        magick_argv(bin_png, "-crop",
+                         f"{CONTEXT_W}x{CONTEXT_H}+{x0}+{y0}", "+repage", out_path),
                         capture_output=True, check=False,
                         timeout=60,
                     )

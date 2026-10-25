@@ -37,8 +37,19 @@ WORD = re.compile(r"[A-Za-z]+")
 
 # Load the system dictionary. Hyphenated lyric fragments ("ro-mance") get
 # tested piecewise, so individual syllables work too.
-with open("/usr/share/dict/words") as f:
-    DICT = {w.strip().lower() for w in f if w.strip()}
+DICT = set()
+for _path in (
+    "/usr/share/dict/words",
+    "/usr/share/dict/american-english",
+    "/usr/share/dict/british-english",
+    "/usr/dict/words",
+):
+    try:
+        with open(_path) as f:
+            DICT = {w.strip().lower() for w in f if w.strip()}
+        break
+    except OSError:
+        pass
 # Add common lyric syllables that aren't English words on their own
 DICT.update({
     "pa", "ja", "jah", "po", "tah", "ma", "mah", "to", "oh", "im", "id",

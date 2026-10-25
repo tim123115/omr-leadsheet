@@ -18,6 +18,7 @@ The tool expects the folder to contain:
   - the source .omr in /MusicXML/
 """
 from __future__ import annotations
+
 import base64
 import json
 import os
@@ -25,9 +26,12 @@ import re
 import subprocess
 import sys
 import tempfile
-import zipfile
 import xml.etree.ElementTree as ET
-from music21 import converter, note, harmony
+import zipfile
+
+from music21 import converter, harmony, note
+
+from omr_leadsheet.utils.imagemagick import magick_argv
 
 
 def parse_review_md(path: str) -> list[tuple[int, str, str]]:
@@ -170,8 +174,8 @@ def crop_to_base64(omr_path: str, sheet_idx: int, x_left: float, x_right: float,
         crop_path = os.path.join(td, "crop.png")
         try:
             subprocess.run(
-                ["magick", bin_png, "-crop", f"{width}x{height}+{x0}+{y0}",
-                 "+repage", crop_path],
+                magick_argv(bin_png, "-crop", f"{width}x{height}+{x0}+{y0}",
+                 "+repage", crop_path),
                 capture_output=True, check=False,
                 timeout=60,
             )

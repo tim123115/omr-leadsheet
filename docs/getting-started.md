@@ -24,14 +24,15 @@ to see every subcommand.
 
 ## 2. System dependencies
 
-| Tool | Purpose | macOS install |
-|---|---|---|
-| Audiveris 5.10+ | Primary OMR | `.pkg` from the releases page |
-| MuseScore 4 | Style application, `.mscz` export | App from musescore.org |
-| Tesseract 5 | Lyric OCR | `brew install tesseract` |
-| Poppler | High-DPI PDF rendering | `brew install poppler` |
-| ImageMagick | Image cropping / compositing | `brew install imagemagick` |
-| ollama (optional) | Local VLM for chord recognition | `brew install ollama && ollama pull qwen2.5vl:7b` |
+| Tool | Purpose | macOS install | Debian/Ubuntu install |
+|---|---|---|---|
+| Audiveris 5.10+ | Primary OMR | `.pkg` from the releases page | JAR/AppImage from GitHub releases |
+| MuseScore 4 | Style application, `.mscz` export | App from musescore.org | AppImage from musescore.org |
+| Tesseract 5 | Lyric OCR | `brew install tesseract` | `sudo apt install tesseract-ocr` |
+| Poppler | High-DPI PDF rendering | `brew install poppler` | `sudo apt install poppler-utils` |
+| ImageMagick | Image cropping / compositing | `brew install imagemagick` | `sudo apt install imagemagick` (IM6 `convert`/`identify` is fine; the Python package falls back automatically) |
+| English word list | Lyric OCR dictionary filter | (usually present) | `sudo apt install wamerican` |
+| ollama (optional) | Local VLM for chord recognition | `brew install ollama && ollama pull qwen2.5vl:7b` | install from ollama.com, then `ollama pull qwen2.5vl:7b` |
 
 You also need a MuseScore `.mss` style file in jazz lead-sheet style
 (the example deployment uses MuseJazz Text plus a custom chord-symbol

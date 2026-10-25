@@ -29,15 +29,17 @@ Usage:
   dataset_extract_unlabeled.py <omr-dir> <out-dir>
 """
 from __future__ import annotations
+
 import csv
 import os
 import re
 import subprocess
 import sys
 import tempfile
-import zipfile
 import xml.etree.ElementTree as ET
+import zipfile
 
+from omr_leadsheet.utils.imagemagick import magick_argv
 
 CHORD_REGEX = re.compile(r"^[A-G][#b]?(?:maj|min|aug|dim|sus|m|M|\+|\-|[0-9])*$")
 
@@ -77,7 +79,7 @@ def _crop(bin_png: str, x: int, y: int, w: int, h: int, out_path: str) -> bool:
     )
     try:
         r = subprocess.run(
-            ["magick", bin_png, "-crop", geom, "+repage", out_path],
+            magick_argv(bin_png, "-crop", geom, "+repage", out_path),
             capture_output=True, check=False,
             timeout=60,
         )

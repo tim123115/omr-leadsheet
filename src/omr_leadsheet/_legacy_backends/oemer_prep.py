@@ -17,13 +17,16 @@ The .omr and PNGs must describe the same PDF at approximately the same
 DPI. We rescale Audiveris coords to the PNG resolution.
 """
 from __future__ import annotations
+
 import os
 import shutil
 import subprocess
 import sys
 import tempfile
-import zipfile
 import xml.etree.ElementTree as ET
+import zipfile
+
+from omr_leadsheet.utils.imagemagick import magick_argv
 
 
 def _staff_bounds(root: ET.Element) -> list[tuple[int, float, float]]:
@@ -55,7 +58,7 @@ def _identify_size(label: str, png_path: str) -> tuple[int, int]:
     """
     try:
         proc = subprocess.run(
-            ["magick", "identify", "-format", "%w %h", png_path],
+            magick_argv("identify", "-format", "%w %h", png_path),
             capture_output=True, text=True, check=False,
             timeout=60,
         )
@@ -170,10 +173,10 @@ def process(omr_path: str, png_dir: str, out_dir: str) -> None:
             out_png = os.path.join(out_dir, f"p-{sheet_idx}.png")
             try:
                 subprocess.run(
-                    ["magick", png_path,
+                    magick_argv(png_path,
                      "-fill", "white", "-stroke", "white",
                      "-draw", draw,
-                     out_png],
+                     out_png),
                     capture_output=True, check=False,
                     timeout=60,
                 )

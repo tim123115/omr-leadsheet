@@ -24,15 +24,17 @@ Usage: chord_row_ocr.py <path-to-.omr>
 Integration: main pipeline imports `recover_chord_row_chords()`.
 """
 from __future__ import annotations
+
 import os
 import re
 import subprocess
 import sys
 import tempfile
-import zipfile
 import xml.etree.ElementTree as ET
+import zipfile
 from dataclasses import dataclass
 
+from omr_leadsheet.utils.imagemagick import magick_argv
 
 CHORD_REGEX = re.compile(r"^[A-G][#b♯♭]?(?:maj|min|aug|dim|sus|m|M|b|#|\+|\-|[0-9/\+])*$")
 # Tight whitelist of characters that appear in chord symbols
@@ -320,7 +322,7 @@ def _ocr_chord_row(
     with tempfile.TemporaryDirectory() as td:
         strip_path = os.path.join(td, "strip.png")
         subprocess.run(
-            ["magick", png_path, "-crop", f"x{strip_h}+0+{top}", "+repage", strip_path],
+            magick_argv(png_path, "-crop", f"x{strip_h}+0+{top}", "+repage", strip_path),
             capture_output=True, check=False,
             timeout=60,
         )
@@ -339,7 +341,7 @@ def _ocr_chord_row(
             w = end - x
             win_path = os.path.join(td, f"win_{x}.png")
             subprocess.run(
-                ["magick", png_path, "-crop", f"{w}x{strip_h}+{x}+{top}", "+repage", win_path],
+                magick_argv(png_path, "-crop", f"{w}x{strip_h}+{x}+{top}", "+repage", win_path),
                 capture_output=True, check=False,
                 timeout=60,
             )
@@ -399,8 +401,8 @@ def _ocr_chord_row(
                     w = min(img_width - x0, half * 2)
                     crop_path = os.path.join(td, f"clf_{xc}.png")
                     subprocess.run(
-                        ["magick", png_path, "-crop",
-                         f"{w}x{strip_h}+{x0}+{top}", "+repage", crop_path],
+                        magick_argv(png_path, "-crop",
+                         f"{w}x{strip_h}+{x0}+{top}", "+repage", crop_path),
                         capture_output=True, check=False,
                         timeout=60,
                     )
@@ -464,8 +466,8 @@ def _ocr_chord_row(
                         continue
                     sweep_path = os.path.join(td, f"sweep_{sx}.png")
                     subprocess.run(
-                        ["magick", png_path, "-crop",
-                         f"{w}x{strip_h}+{sx}+{top}", "+repage", sweep_path],
+                        magick_argv(png_path, "-crop",
+                         f"{w}x{strip_h}+{sx}+{top}", "+repage", sweep_path),
                         capture_output=True, check=False,
                         timeout=60,
                     )
@@ -597,8 +599,8 @@ def _recover_misclassified_articulations(
                 x0, y0 = max(0, int(x0f)), max(0, int(y0f))
                 crop_path = os.path.join(cdir, f"art_{sheet_idx}_{int(x)}_{int(y)}_{i}.png")
                 subprocess.run(
-                    ["magick", bin_png, "-crop",
-                     f"{int(cw)}x{int(ch)}+{x0}+{y0}", "+repage", crop_path],
+                    magick_argv(bin_png, "-crop",
+                     f"{int(cw)}x{int(ch)}+{x0}+{y0}", "+repage", crop_path),
                     capture_output=True, check=False,
                     timeout=60,
                 )
@@ -673,7 +675,7 @@ def recover_chord_row_chords(omr_path: str) -> list[RowChord]:
             from subprocess import run as _run
             img_width = 2500
             try:
-                ident = _run(["magick", "identify", "-format", "%w", bin_png],
+                ident = _run(magick_argv("identify", "-format", "%w", bin_png),
                              capture_output=True, text=True, check=False,
                              timeout=60)
                 img_width = int(ident.stdout.strip())
@@ -720,8 +722,8 @@ def recover_chord_row_chords(omr_path: str) -> list[RowChord]:
             # where the CNN forces a wrong class.
             if os.environ.get("CHORD_VLM") == "1":
                 try:
-                    from omr_leadsheet.recognisers.vlm import VLMClassifier
                     from omr_leadsheet.recognisers.blobs import scan_chord_row_blobs
+                    from omr_leadsheet.recognisers.vlm import VLMClassifier
                     vlm = VLMClassifier()
                     # Emit every blob the VLM identifies. We don't
                     # pre-dedup against tesseract-found tokens here - 

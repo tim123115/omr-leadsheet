@@ -30,11 +30,12 @@ Dictionary gating prevents "is" → "this" kinds of bad swaps.
 Usage: spell_check_lyrics.py <in.musicxml> <tesseract.txt> <out.musicxml>
 """
 from __future__ import annotations
+
 import re
 import sys
 from difflib import SequenceMatcher
-from music21 import converter, note
 
+from music21 import converter, note
 
 # Tokenizer accepts both straight (0x27) and curly (U+2019) apostrophes.
 # Tesseract OCR of typeset jazz fonts often emits the curly variant for
@@ -44,9 +45,24 @@ from music21 import converter, note
 WORD = re.compile(r"[A-Za-z][A-Za-z'’]*")
 
 
-# Load system dict
-with open("/usr/share/dict/words") as f:
-    DICT = {w.strip().lower() for w in f if w.strip()}
+# Load system dict (path varies: macOS, Debian wamerican, etc.)
+def _load_system_dict() -> set[str]:
+    candidates = (
+        "/usr/share/dict/words",
+        "/usr/share/dict/american-english",
+        "/usr/share/dict/british-english",
+        "/usr/dict/words",
+    )
+    for path in candidates:
+        try:
+            with open(path) as f:
+                return {w.strip().lower() for w in f if w.strip()}
+        except OSError:
+            continue
+    return set()
+
+
+DICT = _load_system_dict()
 # Gershwin-specific jazz syllables that aren't English words.
 # Kept as a SEPARATE set (not unioned into MODERN_ENGLISH) so the
 # lyric-prefer rule in apply_alignment can distinguish "jah" (a

@@ -21,15 +21,17 @@ Integration: the main pipeline's chord_diff.py can import
 Audiveris' parsed chord-names before insertion.
 """
 from __future__ import annotations
+
 import os
 import re
 import subprocess
 import sys
 import tempfile
-import zipfile
 import xml.etree.ElementTree as ET
+import zipfile
 from dataclasses import dataclass
 
+from omr_leadsheet.utils.imagemagick import magick_argv
 
 CHORD_CHARS = "ABCDEFGabm#b♯♭+-0123456789MajmajinMsus"
 TESSERACT_CONFIG = (
@@ -100,7 +102,7 @@ def recover_missing_chord_values(omr_path: str) -> list[RecoveredChord]:
                 # Use ImageMagick to crop
                 geom = f"{int(w + 2 * pad_x)}x{int(h + 2 * pad_y)}+{int(x - pad_x)}+{int(y - pad_y)}"
                 subprocess.run(
-                    ["magick", bin_png, "-crop", geom, "+repage", crop_path],
+                    magick_argv(bin_png, "-crop", geom, "+repage", crop_path),
                     capture_output=True, check=False,
                     timeout=60,
                 )

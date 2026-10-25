@@ -23,13 +23,16 @@ Then to inspect class counts:
   for d in dataset/*; do printf '%-15s %d\\n' "$(basename $d)" "$(ls $d | wc -l)"; done | sort -k2 -n
 """
 from __future__ import annotations
+
 import hashlib
 import os
 import subprocess
 import sys
 import tempfile
-import zipfile
 import xml.etree.ElementTree as ET
+import zipfile
+
+from omr_leadsheet.utils.imagemagick import magick_argv
 
 
 def safe_filename(value: str) -> str:
@@ -52,7 +55,7 @@ def crop_chord(bin_png: str, x: int, y: int, w: int, h: int, out_path: str) -> b
     )
     try:
         r = subprocess.run(
-            ["magick", bin_png, "-crop", geom, "+repage", out_path],
+            magick_argv(bin_png, "-crop", geom, "+repage", out_path),
             capture_output=True, check=False,
             timeout=60,
         )
